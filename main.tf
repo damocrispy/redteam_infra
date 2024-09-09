@@ -8,9 +8,15 @@ resource "aws_default_vpc" "default_vpc" {
   }
 }
 
+resource "aws_key_pair" "redteam_keys" {
+  key_name   = "redteam_main"
+  public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL54ZC+UqyW3JamvFSTpDMxoVDMyGlSBSfVNPaR9K2Cr damian.christie@pm.me"
+}
+
 resource "aws_instance" "ec2_vm" {
   ami           = "ami-041290b7cc4be2d3c"
   instance_type = "t2.micro"
+  key_name      = aws_key_pair.redteam_keys.key_name
 
   vpc_security_group_ids = [aws_security_group.vm_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.vm_iam_profile.name
@@ -206,8 +212,8 @@ resource "aws_cloudfront_distribution" "cloudfront_dist" {
 
 resource "aws_wafv2_web_acl" "waf_acl" {
   provider = aws.us_east_1
-  name  = "waf-acl"
-  scope = "CLOUDFRONT"
+  name     = "waf-acl"
+  scope    = "CLOUDFRONT"
 
   default_action {
     allow {}
