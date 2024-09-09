@@ -12,5 +12,11 @@ terraform {
     key    = "terraform.state"
     region = "eu-west-1"
   }
+}
 
+# This provider is required for WAF for CloudFront:
+# https://docs.aws.amazon.com/waf/latest/developerguide/how-aws-waf-works-resources.html
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
 }

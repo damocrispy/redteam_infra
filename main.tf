@@ -151,7 +151,7 @@ resource "aws_cloudfront_distribution" "cloudfront_dist" {
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = aws_lb.load_balancer.id
+    target_origin_id = aws_lb.load_balancer.dns_name
 
     forwarded_values {
       query_string = false
@@ -175,7 +175,7 @@ resource "aws_cloudfront_distribution" "cloudfront_dist" {
     path_pattern     = "*"
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD", "OPTIONS"]
-    target_origin_id = aws_lb.load_balancer.id
+    target_origin_id = aws_lb.load_balancer.dns_name
 
     forwarded_values {
       query_string = false
@@ -201,5 +201,43 @@ resource "aws_cloudfront_distribution" "cloudfront_dist" {
 
   viewer_certificate {
     cloudfront_default_certificate = true
+  }
+}
+
+resource "aws_wafv2_web_acl" "waf_acl" {
+  provider = aws.us_east_1
+  name  = "waf-acl"
+  scope = "CLOUDFRONT"
+
+  default_action {
+    allow {}
+  }
+
+  rule {
+    name     = "rule-1"
+    priority = 1
+
+    action {
+      block {}
+    }
+
+    statement {
+      rate_based_statement {
+        limit              = 100
+        aggregate_key_type = "IP"
+      }
+    }
+
+    visibility_config {
+      cloudwatch_metrics_enabled = false
+      metric_name                = "friendly-rule-metric-name"
+      sampled_requests_enabled   = false
+    }
+  }
+
+  visibility_config {
+    cloudwatch_metrics_enabled = false
+    metric_name                = "friendly-metric-name"
+    sampled_requests_enabled   = false
   }
 }
