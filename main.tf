@@ -8,9 +8,21 @@ resource "aws_default_vpc" "default_vpc" {
   }
 }
 
+resource "aws_default_subnet" "default_subnet_a" {
+  availability_zone = "eu-west-1a"
+}
+
+resource "aws_default_subnet" "default_subnet_b" {
+  availability_zone = "eu-west-1b"
+}
+
+resource "aws_default_subnet" "default_subnet_c" {
+  availability_zone = "eu-west-1c"
+}
+
 resource "aws_key_pair" "redteam_keys" {
   key_name   = "redteam_main"
-  public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL54ZC+UqyW3JamvFSTpDMxoVDMyGlSBSfVNPaR9K2Cr damian.christie@pm.me"
+  public_key = var.public_key
 }
 
 resource "aws_instance" "ec2_vm" {
@@ -18,7 +30,7 @@ resource "aws_instance" "ec2_vm" {
   instance_type = "t2.micro"
   key_name      = aws_key_pair.redteam_keys.key_name
 
-  vpc_security_group_ids = [aws_security_group.vm_sg.id]
+  vpc_security_group_ids = [aws_security_group.app_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.vm_iam_profile.name
 
   tags = {
@@ -29,22 +41,42 @@ resource "aws_instance" "ec2_vm" {
 
 }
 
-resource "aws_security_group" "vm_sg" {
-  name   = "my_vm_sg"
+resource "aws_security_group" "app_sg" {
+  name   = "app_sg"
   vpc_id = aws_default_vpc.default_vpc.id
 
   ingress {
-    description = "HTTP ingress"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    description     = "Ingress from LB"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.lb_sg.id]
   }
 
   ingress {
     description = "SSH ingress"
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["${chomp(data.http.my_ip.response_body)}/32"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "lb_sg" {
+  name   = "lb_sg"
+  vpc_id = aws_default_vpc.default_vpc.id
+
+  ingress {
+    description = "Ingress from everywhere"
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -84,6 +116,18 @@ resource "aws_iam_role_policy_attachment" "ssm_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
+resource "aws_lb" "load_balancer" {
+  name               = "my-load-balancer"
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.lb_sg.id]
+
+  subnets = [
+    aws_default_subnet.default_subnet_a.id,
+    aws_default_subnet.default_subnet_b.id,
+    aws_default_subnet.default_subnet_c.id
+  ]
+}
+
 resource "aws_lb_target_group" "target_group" {
   name     = "my-target-group"
   port     = 80
@@ -97,38 +141,10 @@ resource "aws_lb_target_group" "target_group" {
   }
 }
 
-resource "aws_lb_target_group_attachment" "tg_attachment" {
+resource "aws_lb_target_group_attachment" "target_attachment" {
   target_group_arn = aws_lb_target_group.target_group.arn
-  target_id        = aws_instance.ec2_vm.id
-  port             = 80
-}
-
-resource "aws_default_subnet" "default_subnet_a" {
-  availability_zone = "eu-west-1a"
-}
-
-resource "aws_default_subnet" "default_subnet_b" {
-  availability_zone = "eu-west-1b"
-}
-
-resource "aws_default_subnet" "default_subnet_c" {
-  availability_zone = "eu-west-1c"
-}
-
-resource "aws_lb" "load_balancer" {
-  name               = "my-load-balancer"
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.vm_sg.id]
-
-  subnet_mapping {
-    subnet_id = aws_default_subnet.default_subnet_a.id
-  }
-  subnet_mapping {
-    subnet_id = aws_default_subnet.default_subnet_b.id
-  }
-  subnet_mapping {
-    subnet_id = aws_default_subnet.default_subnet_c.id
-  }
+  target_id = aws_instance.ec2_vm.id
+  port = 80
 }
 
 resource "aws_lb_listener" "listener" {
