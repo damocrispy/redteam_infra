@@ -2,8 +2,9 @@ This is me trying to follow a tutorial. [It's this tutorial here.](https://mediu
 
 WORK IN PROGRESS.
 
-<summary>Current `terraform plan`:</summary>
+
 <details>
+<summary>Current `terraform plan`:</summary>
 
 ```
 Terraform will perform the following actions:
