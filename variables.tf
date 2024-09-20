@@ -1,11 +1,14 @@
 variable "cloudflare_acc_id" {
-    type = string
+  type      = string
+  sensitive = true
 }
 
 variable "cloudflare_api_key" {
-    type = string
+  type      = string
+  sensitive = true
 }
 
 variable "cloudflare_email" {
-    type = string
+  type      = string
+  sensitive = true
 }

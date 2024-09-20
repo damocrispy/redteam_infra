@@ -336,7 +336,7 @@ Terraform will perform the following actions:
           + "Name" = "Main"
         }
       + tenancy                              = (known after apply)
-      + user_data                            = "6cc1787518edc4375236a53e076b90bc855ab409"
+      + user_data                            = "ad677ace05e182c1bf66fad9d9f48218e4ad174c"
       + user_data_base64                     = (known after apply)
       + user_data_replace_on_change          = false
       + vpc_security_group_ids               = (known after apply)
@@ -361,7 +361,18 @@ Terraform will perform the following actions:
 
       + private_dns_name_options (known after apply)
 
-      + root_block_device (known after apply)
+      + root_block_device {
+          + delete_on_termination = true
+          + device_name           = (known after apply)
+          + encrypted             = (known after apply)
+          + iops                  = (known after apply)
+          + kms_key_id            = (known after apply)
+          + tags_all              = (known after apply)
+          + throughput            = (known after apply)
+          + volume_id             = (known after apply)
+          + volume_size           = 64
+          + volume_type           = "gp3"
+        }
     }
 
   # aws_key_pair.redteam_keys will be created
@@ -626,6 +637,49 @@ Terraform will perform the following actions:
         }
     }
 
-Plan: 17 to add, 0 to change, 0 to destroy.
+  # cloudflare_workers_route.worker_route will be created
+  + resource "cloudflare_workers_route" "worker_route" {
+      + id      = (known after apply)
+      + pattern = (known after apply)
+      + zone_id = (known after apply)
+    }
+
+  # cloudflare_workers_script.rev_proxy will be created
+  + resource "cloudflare_workers_script" "rev_proxy" {
+      + account_id          = (sensitive value)
+      + compatibility_flags = (known after apply)
+      + content             = <<-EOT
+            addEventListener('fetch', event => {
+              event.respondWith(handleRequest(event.request))
+            })
+            
+            async function handleRequest(request) {
+              const url = new URL(request.url)
+              url.hostname = '<YOUR_CLOUDFRONT_URL>'
+              return fetch(url, request)
+            }
+        EOT
+      + id                  = (known after apply)
+      + name                = "rev_proxy_script"
+      + tags                = (known after apply)
+    }
+
+  # cloudflare_zone.zone will be created
+  + resource "cloudflare_zone" "zone" {
+      + account_id          = (sensitive value)
+      + id                  = (known after apply)
+      + meta                = (known after apply)
+      + name_servers        = (known after apply)
+      + paused              = false
+      + plan                = (known after apply)
+      + status              = (known after apply)
+      + type                = "full"
+      + vanity_name_servers = (known after apply)
+      + verification_key    = (known after apply)
+      + zone                = (known after apply)
+    }
+
+Plan: 20 to add, 0 to change, 0 to destroy.
+
 ```
 </details>
