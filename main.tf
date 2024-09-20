@@ -30,6 +30,11 @@ resource "aws_instance" "ec2_vm" {
   instance_type = "t2.micro"
   key_name      = aws_key_pair.redteam_keys.key_name
 
+  root_block_device {
+    volume_size = 64
+    volume_type = "gp3"
+  }
+
   vpc_security_group_ids = [aws_security_group.app_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.vm_iam_profile.name
 
