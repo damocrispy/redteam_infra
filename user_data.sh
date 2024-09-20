@@ -34,3 +34,4 @@ cd Mythic_CLI
 make build_linux_docker
 sudo -E ./mythic-cli install github https://github.com/MythicAgents/Apollo.git
 sudo -E ./mythic-cli install github https://github.com/MythicC2Profiles/http.git
+sudo ./mythic-cli start
