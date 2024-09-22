@@ -1,7 +1,9 @@
 resource "cloudflare_workers_script" "rev_proxy" {
   account_id = var.cloudflare_acc_id
   name       = "rev_proxy_script"
-  content    = file("./worker.js")
+  content = templatefile("./worker.js", {
+    cloudfront_url = aws_cloudfront_distribution.cloudfront_dist.domain_name
+  })
 }
 
 resource "cloudflare_zone" "zone" {

@@ -310,7 +310,7 @@ Terraform will perform the following actions:
       + instance_initiated_shutdown_behavior = (known after apply)
       + instance_lifecycle                   = (known after apply)
       + instance_state                       = (known after apply)
-      + instance_type                        = "t2.micro"
+      + instance_type                        = "t2.large"
       + ipv6_address_count                   = (known after apply)
       + ipv6_addresses                       = (known after apply)
       + key_name                             = "redteam_main"
@@ -336,7 +336,7 @@ Terraform will perform the following actions:
           + "Name" = "Main"
         }
       + tenancy                              = (known after apply)
-      + user_data                            = "ad677ace05e182c1bf66fad9d9f48218e4ad174c"
+      + user_data                            = "5680d0e2c37ee3f8dd6a128bdb0d391d8746b59b"
       + user_data_base64                     = (known after apply)
       + user_data_replace_on_change          = false
       + vpc_security_group_ids               = (known after apply)
@@ -648,17 +648,7 @@ Terraform will perform the following actions:
   + resource "cloudflare_workers_script" "rev_proxy" {
       + account_id          = (sensitive value)
       + compatibility_flags = (known after apply)
-      + content             = <<-EOT
-            addEventListener('fetch', event => {
-              event.respondWith(handleRequest(event.request))
-            })
-            
-            async function handleRequest(request) {
-              const url = new URL(request.url)
-              url.hostname = '<YOUR_CLOUDFRONT_URL>'
-              return fetch(url, request)
-            }
-        EOT
+      + content             = (known after apply)
       + id                  = (known after apply)
       + name                = "rev_proxy_script"
       + tags                = (known after apply)

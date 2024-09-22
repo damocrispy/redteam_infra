@@ -1,6 +1,6 @@
 #!/bin/bash
-apt update -y
-apt install -y python3 python3-pip python3-venv make
+sudo apt update -y
+sudo apt install -y python3 python3-pip python3-venv make
 
 cat <<EOT > /home/ubuntu/health_check.py
 from flask import Flask
@@ -29,9 +29,8 @@ nohup python3 /home/ubuntu/health_check.py &
 cd /home/ubuntu
 git clone https://github.com/its-a-feature/Mythic.git
 cd Mythic
-./install_docker_ubuntu.sh
-cd Mythic_CLI
-make build_linux_docker
+sudo ./install_docker_ubuntu.sh
+sudo make 
 sudo -E ./mythic-cli install github https://github.com/MythicAgents/Apollo.git
 sudo -E ./mythic-cli install github https://github.com/MythicC2Profiles/http.git
 sudo ./mythic-cli start

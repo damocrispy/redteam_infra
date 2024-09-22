@@ -4,6 +4,6 @@ addEventListener('fetch', event => {
 
 async function handleRequest(request) {
   const url = new URL(request.url)
-  url.hostname = '<YOUR_CLOUDFRONT_URL>'
+  url.hostname = "${cloudfront_url}"
   return fetch(url, request)
 }

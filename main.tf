@@ -27,7 +27,7 @@ resource "aws_key_pair" "redteam_keys" {
 
 resource "aws_instance" "ec2_vm" {
   ami           = "ami-041290b7cc4be2d3c"
-  instance_type = "t2.micro"
+  instance_type = "t2.large"
   key_name      = aws_key_pair.redteam_keys.key_name
 
   root_block_device {
